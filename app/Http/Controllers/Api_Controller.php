@@ -18,7 +18,7 @@ class Api_Controller extends Controller
 {
   public function __construct()
     {
-   
+   date_default_timezone_set('Asia/Kolkata');
       $this->middleware(function ($request, $next) {
 
         $api_key = "d29985af97d29a80e40cd81016d939af";

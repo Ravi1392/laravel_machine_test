@@ -111,7 +111,7 @@ body {
       <input type="text" name="email" placeholder="Please Enter Your Email"/>
       <input type="password" name="password" placeholder="Please Enter Your Password"/>
       <button>login</button>
-      <p class="message">Not registered? <a href="{{url('new_registration')}}">Create an account</a></p>
+      <p class="message">Not registered? <a href="{{url('/')}}">Create an New User</a></p>
     </form>
   </div>
 </div>

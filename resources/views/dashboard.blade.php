@@ -20,7 +20,7 @@
 							<th>Email</th>
 							<th>Mobile</th>
 							<th>Address</th>
-							<th>Designation</th>
+							<th>Gender</th>
 							<th>Date</th>
 							<th>Action</th>
 						</tr>
@@ -42,15 +42,18 @@
 							<td>{{$user->mobile}}</td>
 							<td>{{$user->address}}</td>
 							<td>
-								@if($user->designation ==1)
-                                <?php echo "Admin"; ?>
-								@elseif($user->designation ==2)
-								<?php echo "User"; ?>
+								@if($user->gender==1)
+								<?php echo "Male"; ?>
+								@elseif($user->gender==2)
+								<?php echo "Female"; ?>
+								@elseif($user->gender==3)
+								<?php echo "Other"; ?>
 								@endif
 							</td>
 							<td><?php echo Date("d-m-Y",strtotime($user->created_at)); ?></td>
 							<td>
-								<a href="{{url('edit')}}/{{$user->id}}" class="btn btn-sm btn-success" style="color: white;">Edit</a>
+								<a href="{{url('view')}}/{{$user->id}}" class="btn btn-sm btn-success" style="color: white;">View</a>
+								<a href="{{url('edit')}}/{{$user->id}}" class="btn btn-sm btn-info" style="color: white;">Edit</a>
 								<a href="{{url('delete')}}/{{$user->id}}" class="btn btn-sm btn-danger" style="color: white;">Delete</a>
 							</td>
 						</tr>

@@ -23,15 +23,15 @@ class Login_Controller extends Controller
 
   //check username and password in database
 
-  $user = DB::table('user')->where('email',$email)->where('deleted','=','1')->where('password',$password);
+  $user = DB::table('admin')->where('email',$email)->where('role','=','1')->where('password',$password);
   if($user->count() =='1')
   {
     $user=$user->first();
    //Login User Data Get in Session
-    session(['name'=>$user->name,'admin_id' => $user->id,'designation'=>$user->designation]);
+    session(['name'=>$user->name,'admin_id' => $user->id,'role'=>$user->role]);
 
 //Redirect To Admin Dashboard
-if($user->designation=='1')
+if($user->role=='1')
 {
   return redirect('/dashboard');
 }else{
@@ -49,7 +49,7 @@ if($user->designation=='1')
   	
     session_unset();
     $request->session()->flush();
-    return redirect('/')->with('success','Logged out successfully.');
+    return redirect('/login')->with('success','Logged out successfully.');
   }
 
  

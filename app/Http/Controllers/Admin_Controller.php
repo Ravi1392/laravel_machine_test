@@ -5,80 +5,129 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserModels;
+use App\Models\EducationModel;
+use App\Models\KnowlangModel;
+use App\Models\TechnicalexpModel;
+use App\Models\WorkexpModel;
 
 class Admin_Controller extends Controller
 {
     public function __construct()
     {
-
-      $this->middleware(function ($request, $next) {
-        //check Designation Admin is login or not
-           if(session('designation') == '1')
-           {
-             $user = DB::table('user')->where('id',session('admin_id'))->where('designation',session('designation'));
-             if($user->count()=='1')
-             {
-                 if($user->first()->status=='0')
-                 {
-                     return redirect('/')->with('error','Your account is suspended !!');
-                 }
-             }else{
-               return redirect('/')->with('error','Your session is over on this device !!');
-             }
-           }else{
-             return redirect('/')->with('error','Invalid Admin / Session is over!!');
-           }
-            return $next($request);
-       });
+     date_default_timezone_set('Asia/Kolkata');
     }
 
     function dashboard()
     {
     	//user data get for table
-      return view('dashboard',['users'=>DB::table('user')->where('deleted','=','1')->where('id','!=',session('admin_id'))->get()]);
+      return view('dashboard',['users'=>DB::table('user')->orderBy('id','desc')->get()]);
+    }
+    function user_info($id){
+      //using first method get specific user data for get data
+      return view('view',['user_info'=>DB::table('user')->where('id',$id)->first()]);
     }
      function edit($id){
      	//using first method get specific user data for get data
-    	return view('edit',['user'=>DB::table('user')->where('id',$id)->first()]);
+    	return view('edit',['user_info'=>DB::table('user')->where('id',$id)->first()]);
     }
-     function update(Request $res){
-        $res->validate([
+    function update(Request $res){
+      //laravel validation
+          $res->validate([
             'name'=>'required',
-            'mobile'=>'required',
-            'email'=>'required',
-            'address'=>'required'
+            'mobile'=>'required', //validation direct check in db 
+            'email'=>'required', //validation direct check in db
+            'address'=>'required',
+            'gender' => 'required',
+            
         ]);
-        $r= DB::table('user')->where('email',$res->email);
-         if($r->count() >=1){
-           if($r->first()->id == $res->id){
-            $user =UserModels::Find($res->id);
-		    $user->name = $res->name;
-		    $user->email = $res->email;
-		    $user->mobile = $res->mobile;
-		    $user->address = $res->address;
-		    $user->designation = $res->designation;
-     
-            $user->save();
-          return redirect('dashboard')->with('success','User Update successfully.');
-        }else{
-          return redirect('edit/'.$res->id)->with('error','Email ID Already Register');
+          $user =UserModels::Find($res->id);
+          $user->name = $res->name;
+          $user->email = $res->email;
+          $user->mobile = $res->mobile;
+          $user->gender = $res->gender;
+          $user->address = $res->address;
+          $user->pre_loc = $res->pre_loc;
+          $user->current_ctc = $res->current_ctc;
+          $user->expected_ctc = $res->expected_ctc;
+          $user->notice_period = $res->notice_period;
+          $user->created_at = date('Y-m-d H:i:s');
+          $user->save();
+         
+    foreach ($res->education as  $value) {
+
+           $obj =EducationModel::Find($value['id']);
+           $obj->field = $value['field'];
+           $obj->university = $value['university'];
+           $obj->year = $value['year'];
+           $obj->percentage =$value['percentage'];
+           $obj->updated_at = date('Y-m-d H:i:s');
+           $obj->save();
         }
-      }else{   	
-	      $user =UserModels::Find($res->id);
-	      $user->name = $res->name;
-	      $user->email = $res->email;
-	      $user->mobile = $res->mobile;
-	      $user->address = $res->address;
-	      $user->designation = $res->designation;
-	     
-	      $user->save();
-      return redirect('dashboard')->with('success',"User Update Successfully");
-      }
+    foreach ($res->addmore as  $value) {
+
+           $obj =WorkexpModel::Find($value['id']);
+           $obj->company = $value['company'];
+           $obj->designation = $value['designation'];
+           $obj->from_date = date('Y-m-d',strtotime($value['from']));
+           $obj->to_date = date('Y-m-d',strtotime($value['to']));
+           $obj->updated_at = date('Y-m-d H:i:s');
+           $obj->save();
+        }
+   
+    foreach ($res->language as  $value) {
+
+          $obj =KnowlangModel::Find($value['id']);
+          $obj->language = $value['language'];
+            if(empty($value['read'])){
+             $read = "";
+            }else{
+                $read = $value['read'];
+            }
+
+           $obj->read_lang = $read;
+
+            if(empty($value['write'])){
+             $write = "";
+            }else{
+                $write = $value['write'];
+            }
+           $obj->write_lang = $write;
+
+           if(empty($value['speak'])){
+             $speak = "";
+            }else{
+                $speak = $value['speak'];
+            }
+           $obj->speak = $speak;
+           $obj->created_at = date('Y-m-d H:i:s');
+           $obj->save();
+        }
+   
+    foreach ($res->prog_language as  $value) {
+
+            if($value['prog_language']=="PHP"){
+             $data = $value['PHP'];
+            }elseif($value['prog_language']=="Mysql"){
+             $data = $value['Mysql'];
+            }elseif($value['prog_language']=="Laravel"){
+              $data = $value['Laravel'];
+            }elseif($value['prog_language']=="Codeigniter"){
+              $data = $value['Codeigniter'];
+            }
+            
+           $obj =TechnicalexpModel::Find($value['id']);
+           $obj->prog_lang = $value['prog_language'];
+           $obj->ability = $data;
+           $obj->updated_at = date('Y-m-d H:i:s');
+           $obj->save();
+        }
+        return redirect('dashboard')->with('success',"User Update Successfully");
+          
     }
+
     function delete(request $req){
-    	//using update query data delete change status 1 to 2 = Delete
-      $user = DB::table('user')->where('id',$req->id);
-      $user->update(['deleted'=>2]);
+      $user = DB::table('user')->where('id',$req->id)->delete();
+     
       return redirect('dashboard')->with('success','User Delete successfully.');
 
     }
